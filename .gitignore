@@ -1,0 +1,17 @@
+# Prerequisites
+*.d
+
+# Object files
+*.o
+
+# Linker output
+*.map
+
+# Executables
+*.out
+*.s37
+*.bin
+*.hex
+
+# Solution Folder
+GNU ARM v10.3.1 - Debug/
