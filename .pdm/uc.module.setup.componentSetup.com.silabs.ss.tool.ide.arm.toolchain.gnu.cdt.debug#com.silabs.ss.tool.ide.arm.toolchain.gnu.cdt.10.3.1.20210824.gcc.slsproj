@@ -121,6 +121,21 @@
           </folder>
         </folder>
       </folder>
+      <folder name="emdrv">
+        <folder name="common">
+          <folder name="inc">
+            <file name="ecode.h" linked="false" uri="studio:/sdk/platform/emdrv/common/inc/ecode.h"/>
+          </folder>
+        </folder>
+        <folder name="tempdrv">
+          <folder name="src">
+            <file name="tempdrv.c" linked="false" uri="studio:/sdk/platform/emdrv/tempdrv/src/tempdrv.c"/>
+          </folder>
+          <folder name="inc">
+            <file name="tempdrv.h" linked="false" uri="studio:/sdk/platform/emdrv/tempdrv/inc/tempdrv.h"/>
+          </folder>
+        </folder>
+      </folder>
       <folder name="emlib">
         <folder name="inc">
           <file name="em_chip.h" linked="false" uri="studio:/sdk/platform/emlib/inc/em_chip.h"/>
@@ -220,11 +235,13 @@
   <includePath uri="studio:/project/gecko_sdk_4.3.2/hardware/driver/configuration_over_swo/inc"/>
   <includePath uri="studio:/project/gecko_sdk_4.3.2/platform/driver/debug/inc"/>
   <includePath uri="studio:/project/gecko_sdk_4.3.2/platform/service/device_init/inc"/>
+  <includePath uri="studio:/project/gecko_sdk_4.3.2/platform/emdrv/common/inc"/>
   <includePath uri="studio:/project/gecko_sdk_4.3.2/platform/emlib/inc"/>
   <includePath uri="studio:/project/gecko_sdk_4.3.2/platform/common/inc"/>
   <includePath uri="studio:/project/gecko_sdk_4.3.2/hardware/driver/mx25_flash_shutdown/inc/sl_mx25_flash_shutdown_usart"/>
   <includePath uri="studio:/project/gecko_sdk_4.3.2/platform/common/toolchain/inc"/>
   <includePath uri="studio:/project/gecko_sdk_4.3.2/platform/service/system/inc"/>
+  <includePath uri="studio:/project/gecko_sdk_4.3.2/platform/emdrv/tempdrv/inc"/>
   <includePath uri="studio:/project/gecko_sdk_4.3.2/platform/service/udelay/inc"/>
   <macroDefinition name="DEBUG_EFM"/>
   <macroDefinition name="EFR32MG24B210F1536IM48"/>

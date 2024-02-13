@@ -7,6 +7,7 @@
     <file name="sl_device_init_emu_config.h" generated="true" linked="false"/>
     <file name="sl_device_init_dcdc_config.h" generated="true" linked="false"/>
     <file name="sl_debug_swo_config.h" generated="true" linked="false"/>
+    <file name="tempdrv_config.h" generated="true" linked="false"/>
     <file name="sl_device_init_lfxo_config.h" generated="true" linked="false"/>
     <file name="sl_device_init_hfxo_config.h" generated="true" linked="false"/>
     <file name="emlib_core_debug_config.h" generated="true" linked="false"/>

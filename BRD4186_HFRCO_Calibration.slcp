@@ -28,6 +28,7 @@ component:
 - {id: device_init}
 - {id: brd4001a}
 - {id: brd4186c}
+- {id: tempdrv}
 define:
 - {name: DEBUG_EFM}
 ui_hints: {}

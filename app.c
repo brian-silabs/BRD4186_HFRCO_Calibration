@@ -18,6 +18,9 @@
 #include "em_cmu.h"
 #include "em_emu.h"
 
+#include "stdlib.h"
+#include "tempdrv.h"
+
 #define HFRCOEM23_DESIRED_FREQ      20000000
 
 #if (HFRCOEM23_DESIRED_FREQ == 20000000)
@@ -29,6 +32,7 @@
 #define DOWNCOUNT                   0xFFFFF
 #define PERFORM_FINETUNE            1
 
+#define HFRCO_CAL_TEMP_DELTA        2 //temperature delta since last calibration ran temperature, trigger
 
 typedef enum HFRCO_Calibration_State {
   HFRCO_CALIBRATION_OFF = 0,
@@ -45,7 +49,9 @@ static HFRCO_Calibration_State_t calibrationState;
 static bool tuned, finetuned, lastCalcUpcountGT, lastCalcUpcountLT;
 static uint32_t theoreticalUpcount, previousUpcount, currentTuningVal, newTuningVal;
 
+static int8_t lastHFRCOCalTemperature;
 static void resetCmuCalibrationFsm(void);
+static void updateEmuTempLimits(int32_t highTempLimit, int32_t lowTempLimit, bool wakeUpEnable);
 
 //Emlib Extensions
 uint32_t CMU_OscillatorFineTuningGet(CMU_Osc_TypeDef osc);
@@ -251,6 +257,9 @@ void app_init(void)
 {
   initHFRCOEM23();
   initCmuCalibrationFsm();
+  TEMPDRV_Init();
+  lastHFRCOCalTemperature = TEMPDRV_GetTemp();
+  updateEmuTempLimits((lastHFRCOCalTemperature + HFRCO_CAL_TEMP_DELTA), (lastHFRCOCalTemperature - HFRCO_CAL_TEMP_DELTA), true);
 }
 
 /***************************************************************************//**
@@ -258,6 +267,21 @@ void app_init(void)
  ******************************************************************************/
 void app_process_action(void)
 {
+#if PERFORM_FINETUNE
+  if(finetuned)
+#else
+  if(tuned)
+#endif
+  {
+    int8_t currentTemperature = TEMPDRV_GetTemp();
+    if(abs(currentTemperature - lastHFRCOCalTemperature) > HFRCO_CAL_TEMP_DELTA)
+    {
+      resetCmuCalibrationFsm();
+      lastHFRCOCalTemperature = currentTemperature;
+      updateEmuTempLimits((lastHFRCOCalTemperature + HFRCO_CAL_TEMP_DELTA), (lastHFRCOCalTemperature - HFRCO_CAL_TEMP_DELTA), true);
+    }
+  }
+
   switch (calibrationState) {
     case HFRCO_CALIBRATION_IDLE:
       if(!tuned){
@@ -292,19 +316,45 @@ void app_process_action(void)
       }
       break;
     case HFRCO_CALIBRATION_DONE:
+      calibrationState = HFRCO_CALIBRATION_IDLE;
       break;
     default:
       break;
   }
 
-  if(calibrationState != HFRCO_CALIBRATION_DONE)
+#if PERFORM_FINETUNE
+  if(finetuned)
+#else
+  if(tuned)
+#endif
   {
-    EMU_EnterEM1();
-  } else {
     EMU_EnterEM2(true);
+  } else {
+    EMU_EnterEM1();
   }
 }
 
+//////////////////// TEMPDRV Extension //////////////////////////////////////
+
+static void updateEmuTempLimits(int32_t highTempLimit, int32_t lowTempLimit, bool wakeUpEnable)
+{
+  uint16_t lowTempK = (uint16_t)((lowTempLimit + 273) & 0x1FF);
+  EMU->TEMPLIMITS = (EMU->TEMPLIMITS & ~_EMU_TEMPLIMITS_TEMPLOW_MASK)
+                    | ((lowTempK << _EMU_TEMPLIMITS_TEMPLOW_SHIFT) & _EMU_TEMPLIMITS_TEMPLOW_MASK);
+
+  uint16_t highTempK = (uint16_t)((highTempLimit + 273) & 0x1FF);
+
+  EMU->TEMPLIMITS = (EMU->TEMPLIMITS & ~_EMU_TEMPLIMITS_TEMPHIGH_MASK)
+                    | ((highTempK << _EMU_TEMPLIMITS_TEMPHIGH_SHIFT) & _EMU_TEMPLIMITS_TEMPHIGH_MASK);
+
+  EMU_IntClear(EMU_IF_TEMPLOW | EMU_IF_TEMPHIGH);
+  // On Series-2 devices the temperature code is normal (high value = high temperature)
+  if (wakeUpEnable) {
+    EMU_IntEnable(EMU_IEN_TEMPLOW | EMU_IEN_TEMPHIGH);
+  } else {
+    EMU_IntDisable(EMU_IEN_TEMPLOW | EMU_IEN_TEMPHIGH);
+  }
+}
 
 //////////////////// EMLIB Extension //////////////////////////////////////
 
